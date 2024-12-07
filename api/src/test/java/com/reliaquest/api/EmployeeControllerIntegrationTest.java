@@ -13,6 +13,8 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.BDDMockito.given;
@@ -76,6 +78,57 @@ public class EmployeeControllerIntegrationTest {
                 .willReturn(mockResponse);
 
         mockMvc.perform(get(APP_URL)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void getEmployeesByNameSearch_noMatches_returnsEmptyList() throws Exception {
+        ResponseWrapperDTO mockResponse = ResponseWrapperDTO.builder()
+                .data(Arrays.asList(
+                        EmployeeDTO.builder().employeeName("Alice").build(),
+                        EmployeeDTO.builder().employeeName("Bob").build()
+                ))
+                .status("OK").build();
+
+        given(restTemplate.getForObject(MOCK_SERVER_URL, ResponseWrapperDTO.class))
+                .willReturn(mockResponse);
+
+        mockMvc.perform(get(APP_URL + "/search/Z")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void getEmployeesByNameSearch_oneMatch_returnsThatOne() throws Exception {
+        EmployeeDTO emp1 = EmployeeDTO.builder().employeeName("Alice").build();
+        EmployeeDTO emp2 = EmployeeDTO.builder().employeeName("Bob").build();
+        ResponseWrapperDTO mockResponse = ResponseWrapperDTO.builder()
+                .data(Arrays.asList(emp1, emp2))
+                .status("OK").build();
+
+        given(restTemplate.getForObject(MOCK_SERVER_URL, ResponseWrapperDTO.class))
+                .willReturn(mockResponse);
+
+        mockMvc.perform(get(APP_URL + "/search/Ali")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].employee_name").value("Alice"));
+    }
+
+    @Test
+    void getEmployeesByNameSearch_noEmployeesReturned_emptyList() throws Exception {
+        ResponseWrapperDTO mockResponse = ResponseWrapperDTO.builder()
+                .data(Collections.emptyList())
+                .status("OK").build();
+
+        given(restTemplate.getForObject(MOCK_SERVER_URL, ResponseWrapperDTO.class))
+                .willReturn(mockResponse);
+
+        mockMvc.perform(get(APP_URL + "/search/Ali")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));

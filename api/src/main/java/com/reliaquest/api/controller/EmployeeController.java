@@ -38,12 +38,21 @@ public class EmployeeController implements IEmployeeController<EmployeeDTO, Crea
     }
 
     /**
-     * @param searchString
-     * @return
+     * Retrieves a list of employees whose names contain the specified search string.
+     * The search is case-sensitive, and any employee whose {@code employeeName} includes
+     * the provided substring will be returned. If no matches are found, this returns
+     * an empty list.
+     *
+     * @param searchString the substring to search for in employee names.
+     * @return a {@link ResponseEntity} containing a list of {@link EmployeeDTO} whose names
+     *         match the search criteria. Returns HTTP 200 OK with an empty list if no matches.
      */
     @Override
     public ResponseEntity<List<EmployeeDTO>> getEmployeesByNameSearch(String searchString) {
-        return null;
+        log.info("Received request to search employees by name: {}", searchString);
+        List<EmployeeDTO> filteredEmployees = employeeService.findEmployeesByName(searchString);
+        log.debug("Found {} employees matching search string '{}'", filteredEmployees.size(), searchString);
+        return ResponseEntity.ok(filteredEmployees);
     }
 
     /**

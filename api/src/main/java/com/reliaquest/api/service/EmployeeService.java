@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -29,4 +30,24 @@ public class EmployeeService {
         log.debug("Found {} employees from mock API", employees.size());
         return employees;
     }
+
+    /**
+     * Retrieves and filters employees whose {@code employeeName} contains the given substring.
+     * <p>
+     * This method delegates to the external API client to fetch all employees, then applies
+     * an in-memory filter. If no employees match, an empty list is returned.
+     *
+     * @param searchString the substring to search for within employee names.
+     * @return a filtered list of {@link EmployeeDTO}. May be empty if no matches found.
+     */
+    public List<EmployeeDTO> findEmployeesByName(String searchString) {
+        log.info("Searching employees by name containing '{}'", searchString);
+        List<EmployeeDTO> allEmployees = externalApiClient.getAllEmployees();
+        List<EmployeeDTO> filtered = allEmployees.stream()
+                .filter(e -> e.getEmployeeName() != null && e.getEmployeeName().contains(searchString))
+                .collect(Collectors.toList());
+        log.debug("Filtered list size: {}", filtered.size());
+        return filtered;
+    }
+
 }
