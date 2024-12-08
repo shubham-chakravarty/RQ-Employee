@@ -68,4 +68,27 @@ public class EmployeeService {
         return employee;
     }
 
+    /**
+     * Finds the highest salary among all employees.
+     * Retrieves all employees from the external client and calculates the maximum salary.
+     * If no employees or salaries are available, returns 0.
+     *
+     * @return the highest salary as an integer, or 0 if no employees exist.
+     */
+    public int findHighestSalary() {
+        log.info("Fetching all employees to determine highest salary");
+        List<EmployeeDTO> employees = externalApiClient.getAllEmployees();
+        if (employees.isEmpty()) {
+            log.debug("No employees found. Returning 0 as highest salary.");
+            return 0;
+        }
+        int maxSalary = employees.stream()
+                .filter(e -> e.getEmployeeSalary() != null)
+                .mapToInt(EmployeeDTO::getEmployeeSalary)
+                .max()
+                .orElse(0);
+        log.debug("Highest salary determined as: {}", maxSalary);
+        return maxSalary;
+    }
+
 }

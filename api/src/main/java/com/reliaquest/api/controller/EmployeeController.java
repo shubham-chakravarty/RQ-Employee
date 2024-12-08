@@ -7,8 +7,8 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -66,7 +66,6 @@ public class EmployeeController implements IEmployeeController<EmployeeDTO, Crea
      * @return a {@link ResponseEntity} containing the {@link EmployeeDTO} if found
      */
     @Override
-    @GetMapping("/{id}")
     public ResponseEntity<EmployeeDTO> getEmployeeById(@PathVariable String id) {
         log.info("Received request to get employee by id: {}", id);
         EmployeeDTO employee = employeeService.findEmployeeById(id);
@@ -74,11 +73,20 @@ public class EmployeeController implements IEmployeeController<EmployeeDTO, Crea
     }
 
     /**
-     * @return
+     * Retrieves the highest salary among all employees.
+     * <p>
+     * This endpoint calls the service layer to fetch all employees and determine the maximum
+     * salary value. If no employees are found, it returns 0.
+     *
+     * @return a {@link ResponseEntity} containing the highest salary (an integer).
+     *         Returns HTTP 200 OK with 0 if no employees exist.
      */
     @Override
     public ResponseEntity<Integer> getHighestSalaryOfEmployees() {
-        return null;
+        log.info("Received request to get highest salary of employees");
+        int highestSalary = employeeService.findHighestSalary();
+        log.debug("Highest salary found: {}", highestSalary);
+        return ResponseEntity.ok(highestSalary);
     }
 
     /**
@@ -94,7 +102,7 @@ public class EmployeeController implements IEmployeeController<EmployeeDTO, Crea
      * @return
      */
     @Override
-    public ResponseEntity<EmployeeDTO> createEmployee(@Valid CreateEmployeeInput employeeInput) {
+    public ResponseEntity<EmployeeDTO> createEmployee(@RequestBody @Valid CreateEmployeeInput employeeInput) {
         return null;
     }
 
