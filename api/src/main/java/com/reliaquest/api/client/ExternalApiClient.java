@@ -18,7 +18,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Component
 @Slf4j
-public class ExternalApiClient {
+public class ExternalApiClient implements IExternalApiClient {
     private final RestTemplate restTemplate;
 
     @Value("${mock.base.url}")

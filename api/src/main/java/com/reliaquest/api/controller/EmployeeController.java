@@ -3,7 +3,7 @@ package com.reliaquest.api.controller;
 import com.reliaquest.api.constants.ApiConstants;
 import com.reliaquest.api.model.CreateEmployeeInput;
 import com.reliaquest.api.model.EmployeeDTO;
-import com.reliaquest.api.service.EmployeeService;
+import com.reliaquest.api.service.IEmployeeService;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 public class EmployeeController implements IEmployeeController<EmployeeDTO, CreateEmployeeInput> {
 
-    private final EmployeeService employeeService;
+    private final IEmployeeService employeeService;
 
     /**
      * Handles the HTTP GET request to retrieve all employees.

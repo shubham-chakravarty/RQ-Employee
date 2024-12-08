@@ -1,6 +1,6 @@
 package com.reliaquest.api.service;
 
-import com.reliaquest.api.client.ExternalApiClient;
+import com.reliaquest.api.client.IExternalApiClient;
 import com.reliaquest.api.exception.EmployeeNotFoundException;
 import com.reliaquest.api.model.CreateEmployeeInput;
 import com.reliaquest.api.model.EmployeeDTO;
@@ -13,9 +13,9 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @AllArgsConstructor
-public class EmployeeService {
+public class EmployeeService implements IEmployeeService {
 
-    private ExternalApiClient externalApiClient;
+    private IExternalApiClient externalApiClient;
 
     /**
      * Retrieves a comprehensive list of all employees by invoking the external API client.
@@ -25,6 +25,7 @@ public class EmployeeService {
      *
      * @return a list of {@link EmployeeDTO}, possibly empty if the external source returns none.
      */
+    @Override
     public List<EmployeeDTO> findAllEmployees() {
         log.info("Fetching all employees via ExternalEmployeeApiClient");
         List<EmployeeDTO> employees = externalApiClient.getAllEmployees();
@@ -40,6 +41,7 @@ public class EmployeeService {
      * @param searchString the substring to search for within employee names.
      * @return a filtered list of {@link EmployeeDTO}. May be empty if no matches found.
      */
+    @Override
     public List<EmployeeDTO> findEmployeesByName(String searchString) {
         log.info("Searching employees by name containing '{}'", searchString);
         List<EmployeeDTO> allEmployees = externalApiClient.getAllEmployees();
@@ -57,6 +59,7 @@ public class EmployeeService {
      * @param id the employee's unique identifier
      * @return the corresponding {@link EmployeeDTO} if found
      */
+    @Override
     public EmployeeDTO findEmployeeById(String id) {
         log.info("Attempting to find employee with id: {}", id);
         EmployeeDTO employee = externalApiClient.getEmployeeById(id);
@@ -75,6 +78,7 @@ public class EmployeeService {
      *
      * @return the highest salary as an integer, or 0 if no employees exist.
      */
+    @Override
     public int findHighestSalary() {
         log.info("Fetching all employees to determine highest salary");
         List<EmployeeDTO> employees = externalApiClient.getAllEmployees();
@@ -102,6 +106,7 @@ public class EmployeeService {
      * @param countOfRecords the number of top earners to retrieve
      * @return a list of up to <code>countOfRecords</code> employee names sorted by their salary in descending order
      */
+    @Override
     public List<String> findTopTenHighestEarningNames(int countOfRecords) {
         log.info("Fetching all employees to determine top {} highest earners", countOfRecords);
         List<EmployeeDTO> employees = externalApiClient.getAllEmployees();
@@ -127,6 +132,7 @@ public class EmployeeService {
      * @param input the employee creation request data
      * @return the created {@link EmployeeDTO} from the external API
      */
+    @Override
     public EmployeeDTO createEmployee(CreateEmployeeInput input) {
         log.info("Creating employee via external API: {}", input.getName());
         EmployeeDTO created = externalApiClient.createEmployee(input);
@@ -142,6 +148,7 @@ public class EmployeeService {
      * @return a success message if the employee is deleted successfully.
      * @throws EmployeeNotFoundException if the employee is not found or has no valid name.
      */
+    @Override
     public String deleteEmployeeById(String id) {
         // Fetch employee by ID
         EmployeeDTO employee = externalApiClient.getEmployeeById(id);
