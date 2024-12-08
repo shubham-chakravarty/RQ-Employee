@@ -1,3 +1,10 @@
-spring.application.name: employee-api
-server.port: 8111
-mock.base.url: http://localhost:8112/
+spring:
+  application:
+    name: employee-api
+
+mock:
+  base:
+    url: http://localhost:8112/
+
+server:
+  port: 8111
