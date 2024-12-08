@@ -11,9 +11,7 @@ public class CreateEmployeeInput {
     @NotBlank
     private String name;
 
-    @Positive
-    @NotNull
-    private Integer salary;
+    @Positive @NotNull private Integer salary;
 
     @Min(16)
     @Max(75)

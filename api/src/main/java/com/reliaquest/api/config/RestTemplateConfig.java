@@ -11,7 +11,7 @@ public class RestTemplateConfig {
      * @return RestTemplate Bean
      */
     @Bean
-    public RestTemplate getRestTemplate(){
+    public RestTemplate getRestTemplate() {
         return new RestTemplate();
     }
 }

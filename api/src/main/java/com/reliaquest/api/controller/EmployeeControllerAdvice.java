@@ -1,16 +1,15 @@
 package com.reliaquest.api.controller;
 
 import com.reliaquest.api.exception.EmployeeNotFoundException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @ControllerAdvice
@@ -47,10 +46,12 @@ public class EmployeeControllerAdvice {
     public ResponseEntity<Object> handleValidationException(MethodArgumentNotValidException ex) {
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("message", "Validation failed");
-        errorResponse.put("details", ex.getBindingResult().getFieldErrors()
-                .stream()
-                .map(fieldError -> String.format("Field '%s' %s", fieldError.getField(), fieldError.getDefaultMessage()))
-                .collect(Collectors.toList()));
+        errorResponse.put(
+                "details",
+                ex.getBindingResult().getFieldErrors().stream()
+                        .map(fieldError ->
+                                String.format("Field '%s' %s", fieldError.getField(), fieldError.getDefaultMessage()))
+                        .collect(Collectors.toList()));
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }

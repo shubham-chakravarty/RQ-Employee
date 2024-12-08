@@ -2,6 +2,8 @@ package com.reliaquest.api.client;
 
 import com.reliaquest.api.constants.ApiConstants;
 import com.reliaquest.api.model.*;
+import java.util.Collections;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,9 +15,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.Collections;
-import java.util.List;
 
 @Component
 @Slf4j
@@ -29,7 +28,6 @@ public class ExternalApiClient {
     public ExternalApiClient(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
-
 
     /**
      * Contacts the external mock employee API to retrieve all employee records.
@@ -53,7 +51,6 @@ public class ExternalApiClient {
         return response.getData();
     }
 
-
     /**
      * Retrieves a single employee by ID from the external mock API.
      * <p>
@@ -74,7 +71,7 @@ public class ExternalApiClient {
             }
             return response.getData();
         } catch (HttpClientErrorException.NotFound ex) {
-            //handles RestTemplate's 404
+            // handles RestTemplate's 404
             log.warn("Employee not found on external API for id: {}", id);
             return null;
         }

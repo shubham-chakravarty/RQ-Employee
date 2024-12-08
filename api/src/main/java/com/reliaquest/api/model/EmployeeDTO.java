@@ -7,7 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 @AllArgsConstructor
-@Getter @Setter
+@Getter
+@Setter
 @Builder
 public class EmployeeDTO {
     @JsonProperty("id")

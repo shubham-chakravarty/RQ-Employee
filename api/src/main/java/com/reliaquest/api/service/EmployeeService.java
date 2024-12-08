@@ -4,13 +4,11 @@ import com.reliaquest.api.client.ExternalApiClient;
 import com.reliaquest.api.exception.EmployeeNotFoundException;
 import com.reliaquest.api.model.CreateEmployeeInput;
 import com.reliaquest.api.model.EmployeeDTO;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -105,7 +103,7 @@ public class EmployeeService {
      * @return a list of up to <code>countOfRecords</code> employee names sorted by their salary in descending order
      */
     public List<String> findTopTenHighestEarningNames(int countOfRecords) {
-        log.info("Fetching all employees to determine top {} highest earners",countOfRecords);
+        log.info("Fetching all employees to determine top {} highest earners", countOfRecords);
         List<EmployeeDTO> employees = externalApiClient.getAllEmployees();
 
         List<String> topEarners = employees.stream()
@@ -155,10 +153,9 @@ public class EmployeeService {
 
         // Delete employee by name
         externalApiClient.deleteEmployeeByName(employee.getEmployeeName());
-        String successMessage = "Employee with ID " + id + " and name " + employee.getEmployeeName() + " deleted successfully.";
+        String successMessage =
+                "Employee with ID " + id + " and name " + employee.getEmployeeName() + " deleted successfully.";
         log.info(successMessage);
         return successMessage;
     }
-
-
 }

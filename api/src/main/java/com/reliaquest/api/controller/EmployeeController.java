@@ -5,6 +5,7 @@ import com.reliaquest.api.model.CreateEmployeeInput;
 import com.reliaquest.api.model.EmployeeDTO;
 import com.reliaquest.api.service.EmployeeService;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -13,8 +14,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/v1/employees")
@@ -105,7 +104,8 @@ public class EmployeeController implements IEmployeeController<EmployeeDTO, Crea
     @Override
     public ResponseEntity<List<String>> getTopTenHighestEarningEmployeeNames() {
         log.info("Received request to get top 10 highest earning employee names");
-        List<String> topEarners = employeeService.findTopTenHighestEarningNames(ApiConstants.TOP_EARNERS_COUNT);//default set to 10
+        List<String> topEarners =
+                employeeService.findTopTenHighestEarningNames(ApiConstants.TOP_EARNERS_COUNT); // default set to 10
         log.debug("Returning {} top earning employee names", topEarners.size());
         return ResponseEntity.ok(topEarners);
     }
