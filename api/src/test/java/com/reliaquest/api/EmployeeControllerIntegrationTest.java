@@ -105,7 +105,8 @@ public class EmployeeControllerIntegrationTest {
         given(restTemplate.getForObject(MOCK_SERVER_URL, ResponseWrapperDTO.class))
                 .willReturn(mockResponse);
 
-        mockMvc.perform(get(APP_URL + "/search/Z")
+        String url = APP_URL + ApiConstants.SEARCH_ENDPOINT + "/Z";
+        mockMvc.perform(get(url)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
@@ -122,7 +123,8 @@ public class EmployeeControllerIntegrationTest {
         given(restTemplate.getForObject(MOCK_SERVER_URL, ResponseWrapperDTO.class))
                 .willReturn(mockResponse);
 
-        mockMvc.perform(get(APP_URL + "/search/Ali")
+        String url = APP_URL + ApiConstants.SEARCH_ENDPOINT + "/Ali";
+        mockMvc.perform(get(url)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
@@ -137,8 +139,8 @@ public class EmployeeControllerIntegrationTest {
 
         given(restTemplate.getForObject(MOCK_SERVER_URL, ResponseWrapperDTO.class))
                 .willReturn(mockResponse);
-
-        mockMvc.perform(get(APP_URL + "/search/Ali")
+        String url = APP_URL + ApiConstants.SEARCH_ENDPOINT + "/Ali";
+        mockMvc.perform(get(url)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
@@ -152,11 +154,12 @@ public class EmployeeControllerIntegrationTest {
         response.setData(emp);
         response.setStatus("OK");
 
-        String url = MOCK_SERVER_URL + PATH_SEPARATOR + id;
-        given(restTemplate.getForObject(url, SingleEmployeeResponseDTO.class))
+        String mockUrl = MOCK_SERVER_URL + PATH_SEPARATOR + id;
+        given(restTemplate.getForObject(mockUrl, SingleEmployeeResponseDTO.class))
                 .willReturn(response);
 
-        mockMvc.perform(get(APP_URL + PATH_SEPARATOR + id)
+        String url = APP_URL + PATH_SEPARATOR + id;
+        mockMvc.perform(get(url)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id))
@@ -166,9 +169,9 @@ public class EmployeeControllerIntegrationTest {
     @Test
     void getEmployeeById_notFound_returns404() throws Exception {
         String id = "non-existent-id";
-        String finalUrl = MOCK_SERVER_URL + PATH_SEPARATOR + id;
+        String mockUrl = MOCK_SERVER_URL + PATH_SEPARATOR + id;
 
-        given(restTemplate.getForObject(eq(finalUrl), eq(SingleEmployeeResponseDTO.class)))
+        given(restTemplate.getForObject(eq(mockUrl), eq(SingleEmployeeResponseDTO.class)))
                 //creating NOT FOUND Exception
                 .willThrow(HttpClientErrorException.create(
                         HttpStatus.NOT_FOUND,
@@ -178,7 +181,8 @@ public class EmployeeControllerIntegrationTest {
                         null
                 ));
 
-        mockMvc.perform(get(APP_URL + PATH_SEPARATOR + id)
+        String url = APP_URL + PATH_SEPARATOR + id;
+        mockMvc.perform(get(url)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string("Employee not found for ID: " + id));
@@ -190,7 +194,7 @@ public class EmployeeControllerIntegrationTest {
                 .data(Collections.emptyList())
                 .status("OK").build();
 
-        String url = APP_URL + ApiConstants.PATH_SEPARATOR + "highestSalary";
+        String url = APP_URL + ApiConstants.HIGHEST_SALARY_ENDPOINT;
         given(restTemplate.getForObject(eq(MOCK_SERVER_URL), eq(ResponseWrapperDTO.class)))
                 .willReturn(mockResponse);
 
@@ -202,9 +206,6 @@ public class EmployeeControllerIntegrationTest {
 
     @Test
     void getHighestSalary_multipleEmployees_returnsMax() throws Exception {
-
-        String url = APP_URL + ApiConstants.PATH_SEPARATOR + "highestSalary";
-
         EmployeeDTO emp1 = EmployeeDTO.builder().employeeSalary(50000).build();
         EmployeeDTO emp2 = EmployeeDTO.builder().employeeSalary(100000).build();
         EmployeeDTO emp3 = EmployeeDTO.builder().employeeSalary(75000).build();
@@ -215,6 +216,7 @@ public class EmployeeControllerIntegrationTest {
         given(restTemplate.getForObject(eq(MOCK_SERVER_URL), eq(ResponseWrapperDTO.class)))
                 .willReturn(mockResponse);
 
+        String url = APP_URL + ApiConstants.HIGHEST_SALARY_ENDPOINT;
         mockMvc.perform(get(url)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -223,9 +225,6 @@ public class EmployeeControllerIntegrationTest {
 
     @Test
     void getHighestSalary_allNullSalaries_returns0() throws Exception {
-
-        String url = APP_URL + ApiConstants.PATH_SEPARATOR + "highestSalary";
-
         EmployeeDTO emp1 = EmployeeDTO.builder().employeeSalary(null).build();
         EmployeeDTO emp2 = EmployeeDTO.builder().employeeSalary(null).build();
         ResponseWrapperDTO mockResponse = ResponseWrapperDTO.builder()
@@ -235,9 +234,90 @@ public class EmployeeControllerIntegrationTest {
         given(restTemplate.getForObject(eq(MOCK_SERVER_URL), eq(ResponseWrapperDTO.class)))
                 .willReturn(mockResponse);
 
+        String url = APP_URL + ApiConstants.HIGHEST_SALARY_ENDPOINT;
         mockMvc.perform(get(url)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().string("0"));
+    }
+
+    @Test
+    void getTopTenHighestEarningEmployeeNames_noEmployees_returnsEmptyList() throws Exception {
+        ResponseWrapperDTO mockResponse = ResponseWrapperDTO.builder()
+                .data(Collections.emptyList())
+                .status("OK").build();
+
+        given(restTemplate.getForObject(eq(MOCK_SERVER_URL), eq(ResponseWrapperDTO.class))).willReturn(mockResponse);
+
+        String url = APP_URL + ApiConstants.TOP_EARNING_SALARY_EMPLOYEES_ENDPOINT;
+        mockMvc.perform(get(url)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string("[]"));
+    }
+
+    @Test
+    void getTopTenHighestEarningEmployeeNames_lessThanTenEmployees_returnsAllInDescendingOrder() throws Exception {
+        EmployeeDTO emp1 = EmployeeDTO.builder().employeeName("Alice").employeeSalary(1000).build();
+        EmployeeDTO emp2 = EmployeeDTO.builder().employeeName("Bob").employeeSalary(2000).build();
+        EmployeeDTO emp3 = EmployeeDTO.builder().employeeName("Charlie").employeeSalary(1500).build();
+        ResponseWrapperDTO mockResponse = ResponseWrapperDTO.builder()
+                .data(Arrays.asList(emp1, emp2, emp3))
+                .status("OK").build();
+
+        given(restTemplate.getForObject(eq(MOCK_SERVER_URL), eq(ResponseWrapperDTO.class))).willReturn(mockResponse);
+
+        String url = APP_URL + ApiConstants.TOP_EARNING_SALARY_EMPLOYEES_ENDPOINT;
+        mockMvc.perform(get(url)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(3))
+                .andExpect(jsonPath("$[0]").value("Bob"))
+                .andExpect(jsonPath("$[1]").value("Charlie"))
+                .andExpect(jsonPath("$[2]").value("Alice"));
+    }
+
+    @Test
+    void getTopTenHighestEarningEmployeeNames_moreThanTenEmployees_returnsTopTen() throws Exception {
+        // 12 employees with ascending salaries
+        EmployeeDTO[] employees = new EmployeeDTO[12];
+        for (int i = 1; i <= 12; i++) {
+            employees[i-1] = EmployeeDTO.builder().employeeName("E" + i).employeeSalary(i * 1000).build();
+        }
+        ResponseWrapperDTO mockResponse = ResponseWrapperDTO.builder()
+                .data(Arrays.asList(employees))
+                .status("OK").build();
+
+        given(restTemplate.getForObject(eq(MOCK_SERVER_URL), eq(ResponseWrapperDTO.class))).willReturn(mockResponse);
+
+        String url = APP_URL + ApiConstants.TOP_EARNING_SALARY_EMPLOYEES_ENDPOINT;
+        mockMvc.perform(get(url)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(10))
+                .andExpect(jsonPath("$[0]").value("E12"))
+                .andExpect(jsonPath("$[9]").value("E3"));
+    }
+
+    @Test
+    void getTopTenHighestEarningEmployeeNames_someNullSalaries_ignored() throws Exception {
+        EmployeeDTO emp1 = EmployeeDTO.builder().employeeName("High").employeeSalary(5000).build();
+        EmployeeDTO emp2 = EmployeeDTO.builder().employeeName("NullOne").employeeSalary(null).build();
+        EmployeeDTO emp3 = EmployeeDTO.builder().employeeName("Low").employeeSalary(1000).build();
+        EmployeeDTO emp4 = EmployeeDTO.builder().employeeName("NullTwo").employeeSalary(null).build();
+
+        ResponseWrapperDTO mockResponse = ResponseWrapperDTO.builder()
+                .data(Arrays.asList(emp1, emp2, emp3, emp4))
+                .status("OK").build();
+
+        given(restTemplate.getForObject(eq(MOCK_SERVER_URL), eq(ResponseWrapperDTO.class))).willReturn(mockResponse);
+
+        String url = APP_URL + ApiConstants.TOP_EARNING_SALARY_EMPLOYEES_ENDPOINT;
+        mockMvc.perform(get(url)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0]").value("High"))
+                .andExpect(jsonPath("$[1]").value("Low"));
     }
 }

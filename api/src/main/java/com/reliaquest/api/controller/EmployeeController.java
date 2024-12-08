@@ -1,5 +1,6 @@
 package com.reliaquest.api.controller;
 
+import com.reliaquest.api.constants.ApiConstants;
 import com.reliaquest.api.model.CreateEmployeeInput;
 import com.reliaquest.api.model.EmployeeDTO;
 import com.reliaquest.api.service.EmployeeService;
@@ -90,11 +91,22 @@ public class EmployeeController implements IEmployeeController<EmployeeDTO, Crea
     }
 
     /**
-     * @return
+     * Retrieves the top 10 highest-earning employee names.
+     * <p>
+     * This endpoint sorts employees by their salary in descending order and returns
+     * the names of the top 10 earners. If there are fewer than 10 employees, it returns
+     * the names of all the employees sorted by salary. If no employees or no salaries
+     * are available, it returns an empty list.
+     *
+     * @return a {@link ResponseEntity} containing a list of {@link String} representing
+     *         the top 10 highest earners' names. Returns HTTP 200 OK, even if empty.
      */
     @Override
     public ResponseEntity<List<String>> getTopTenHighestEarningEmployeeNames() {
-        return null;
+        log.info("Received request to get top 10 highest earning employee names");
+        List<String> topEarners = employeeService.findTopTenHighestEarningNames(ApiConstants.TOP_EARNERS_COUNT);//default set to 10
+        log.debug("Returning {} top earning employee names", topEarners.size());
+        return ResponseEntity.ok(topEarners);
     }
 
     /**

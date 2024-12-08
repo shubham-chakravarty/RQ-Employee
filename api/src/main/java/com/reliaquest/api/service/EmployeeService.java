@@ -91,4 +91,30 @@ public class EmployeeService {
         return maxSalary;
     }
 
+    /**
+     * Finds the highest N earning employees by salary and returns their names.
+     * <p>
+     * This method fetches all employees from the external source, filters out those without a valid salary,
+     * sorts the remaining employees by salary in descending order, and then returns the names of up to
+     * <code>countOfRecords</code> of these top earners. If there are fewer than <code>countOfRecords</code> employees
+     * available, it returns as many as it can. If no employees have a valid salary, it returns an empty list.
+     *
+     * @param countOfRecords the number of top earners to retrieve
+     * @return a list of up to <code>countOfRecords</code> employee names sorted by their salary in descending order
+     */
+    public List<String> findTopTenHighestEarningNames(int countOfRecords) {
+        log.info("Fetching all employees to determine top {} highest earners",countOfRecords);
+        List<EmployeeDTO> employees = externalApiClient.getAllEmployees();
+
+        List<String> topEarners = employees.stream()
+                .filter(e -> e.getEmployeeSalary() != null)
+                .sorted((a, b) -> b.getEmployeeSalary().compareTo(a.getEmployeeSalary()))
+                .limit(countOfRecords)
+                .map(EmployeeDTO::getEmployeeName)
+                .collect(Collectors.toList());
+
+        log.debug("Top earners found: {}", topEarners);
+        return topEarners;
+    }
+
 }
