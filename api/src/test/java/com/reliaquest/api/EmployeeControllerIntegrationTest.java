@@ -2,25 +2,26 @@ package com.reliaquest.api;
 
 import com.reliaquest.api.model.EmployeeDTO;
 import com.reliaquest.api.model.ResponseWrapperDTO;
+import com.reliaquest.api.model.SingleEmployeeResponseDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -33,7 +34,9 @@ public class EmployeeControllerIntegrationTest {
     private RestTemplate restTemplate;
 
     private final String MOCK_SERVER_URL = "http://localhost:8112/api/v1/employee";
-    private final String APP_URL = "http://localhost:8111/v1/employees";
+//    private final String APP_URL = "http://localhost:8111/v1/employees";
+    private final String APP_URL = "/v1/employees";
+    private final String PATH_SEPARATOR = "/";
 
     @Test
     void getAllEmployees_returnListOfEmployees_shouldReturnListOfEmployees() throws Exception {
@@ -132,5 +135,45 @@ public class EmployeeControllerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void getEmployeeById_found_returnsEmployee() throws Exception {
+        String id = UUID.randomUUID().toString();
+        EmployeeDTO emp = EmployeeDTO.builder().id(id).employeeName("Jane Doe").build();
+        SingleEmployeeResponseDTO response = new SingleEmployeeResponseDTO();
+        response.setData(emp);
+        response.setStatus("OK");
+
+        String url = MOCK_SERVER_URL + PATH_SEPARATOR + id;
+        given(restTemplate.getForObject(url, SingleEmployeeResponseDTO.class))
+                .willReturn(response);
+
+        mockMvc.perform(get(APP_URL + PATH_SEPARATOR + id)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(id))
+                .andExpect(jsonPath("$.employee_name").value("Jane Doe"));
+    }
+
+    @Test
+    void getEmployeeById_notFound_returns404() throws Exception {
+        String id = "non-existent-id";
+        String finalUrl = MOCK_SERVER_URL + PATH_SEPARATOR + id;
+
+        given(restTemplate.getForObject(eq(finalUrl), eq(SingleEmployeeResponseDTO.class)))
+                //creating NOT FOUND Exception
+                .willThrow(HttpClientErrorException.create(
+                        HttpStatus.NOT_FOUND,
+                        "Not Found",
+                        HttpHeaders.EMPTY,
+                        null,
+                        null
+                ));
+
+        mockMvc.perform(get(APP_URL + PATH_SEPARATOR + id)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Employee not found for ID: " + id));
     }
 }

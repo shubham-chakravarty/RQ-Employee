@@ -7,6 +7,8 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -56,12 +58,19 @@ public class EmployeeController implements IEmployeeController<EmployeeDTO, Crea
     }
 
     /**
-     * @param id
-     * @return
+     * Retrieves a single employee by their ID.
+     * Returns a 200 OK with the employee data if found.
+     * If not found, returns 404 Not Found (handled by {@link EmployeeControllerAdvice}).
+     *
+     * @param id the employee's unique identifier
+     * @return a {@link ResponseEntity} containing the {@link EmployeeDTO} if found
      */
     @Override
-    public ResponseEntity<EmployeeDTO> getEmployeeById(String id) {
-        return null;
+    @GetMapping("/{id}")
+    public ResponseEntity<EmployeeDTO> getEmployeeById(@PathVariable String id) {
+        log.info("Received request to get employee by id: {}", id);
+        EmployeeDTO employee = employeeService.findEmployeeById(id);
+        return ResponseEntity.ok(employee);
     }
 
     /**

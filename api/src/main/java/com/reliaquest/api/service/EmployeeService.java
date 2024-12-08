@@ -1,6 +1,7 @@
 package com.reliaquest.api.service;
 
 import com.reliaquest.api.client.ExternalApiClient;
+import com.reliaquest.api.exception.EmployeeNotFoundException;
 import com.reliaquest.api.model.EmployeeDTO;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +34,6 @@ public class EmployeeService {
 
     /**
      * Retrieves and filters employees whose {@code employeeName} contains the given substring.
-     * <p>
      * This method delegates to the external API client to fetch all employees, then applies
      * an in-memory filter. If no employees match, an empty list is returned.
      *
@@ -48,6 +48,24 @@ public class EmployeeService {
                 .collect(Collectors.toList());
         log.debug("Filtered list size: {}", filtered.size());
         return filtered;
+    }
+
+    /**
+     * Finds an employee by their unique identifier.
+     * If the employee is not found, throws {@link EmployeeNotFoundException}.
+     *
+     * @param id the employee's unique identifier
+     * @return the corresponding {@link EmployeeDTO} if found
+     */
+    public EmployeeDTO findEmployeeById(String id) {
+        log.info("Attempting to find employee with id: {}", id);
+        EmployeeDTO employee = externalApiClient.getEmployeeById(id);
+        if (employee == null) {
+            log.debug("Employee with id {} not found", id);
+            throw new EmployeeNotFoundException(id);
+        }
+        log.debug("Employee with id {} found: {}", id, employee.getEmployeeName());
+        return employee;
     }
 
 }
