@@ -1,6 +1,8 @@
 package com.reliaquest.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reliaquest.api.constants.ApiConstants;
+import com.reliaquest.api.model.CreateEmployeeInput;
 import com.reliaquest.api.model.EmployeeDTO;
 import com.reliaquest.api.model.ResponseWrapperDTO;
 import com.reliaquest.api.model.SingleEmployeeResponseDTO;
@@ -19,9 +21,11 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
+import static org.hamcrest.Matchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -30,6 +34,9 @@ public class EmployeeControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockBean
     private RestTemplate restTemplate;
@@ -319,5 +326,62 @@ public class EmployeeControllerIntegrationTest {
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0]").value("High"))
                 .andExpect(jsonPath("$[1]").value("Low"));
+    }
+
+    @Test
+    void createEmployee_validInput_returnsCreatedEmployee() throws Exception {
+        String employeeId = "new-id";
+        String employeeName = "Jane Doe";
+        int employeeSalary = 60000;
+        int employeeAge = 25;
+        String employeeTitle = "Analyst";
+
+        CreateEmployeeInput input = CreateEmployeeInput.builder()
+                .name(employeeName)
+                .age(employeeAge)
+                .salary(employeeSalary)
+                .title(employeeTitle)
+                .build();
+
+        EmployeeDTO employee = EmployeeDTO.builder()
+                .id(employeeId)
+                .employeeName(employeeName)
+                .employeeSalary(employeeSalary)
+                .employeeAge(employeeAge)
+                .employeeTitle(employeeTitle)
+                .build();
+
+        SingleEmployeeResponseDTO mockResponse = SingleEmployeeResponseDTO.builder()
+                                .status("Created")
+                                .data(employee)
+                                .build();
+
+        given(restTemplate.postForObject(eq(MOCK_SERVER_URL), eq(input), eq(SingleEmployeeResponseDTO.class)))
+                .willReturn(mockResponse);
+
+        mockMvc.perform(post("/v1/employees")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(input)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(employeeId))
+                .andExpect(jsonPath("$.employee_name").value(employeeName))
+                .andExpect(jsonPath("$.employee_salary").value(employeeSalary))
+                .andExpect(jsonPath("$.employee_age").value(employeeAge))
+                .andExpect(jsonPath("$.employee_title").value(employeeTitle));
+    }
+
+    @Test
+    void createEmployee_invalidInput_returnsBadRequest() throws Exception {
+        CreateEmployeeInput input = CreateEmployeeInput.builder()
+                .name("") // Invalid: blank name
+                .age(15) // Invalid: must be >=16
+                .salary(0) // Invalid: must be >=1
+                .title("") // Invalid: blank title
+                .build();
+
+        mockMvc.perform(post(APP_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(input)))
+                .andExpect(status().isBadRequest());
     }
 }

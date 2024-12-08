@@ -7,6 +7,7 @@ import com.reliaquest.api.service.EmployeeService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -110,12 +111,21 @@ public class EmployeeController implements IEmployeeController<EmployeeDTO, Crea
     }
 
     /**
-     * @param employeeInput
-     * @return
+     * Creates a new employee with the given input data.
+     * <p>
+     * Validates the input fields and, if valid, calls the service layer to create a new employee
+     * via the external API. On success, returns the newly created employee’s details with
+     * HTTP 201 CREATED. If validation fails, returns 400 Bad Request.
+     *
+     * @param employeeInput the input data required to create a new employee
+     * @return a {@link ResponseEntity} containing the created {@link EmployeeDTO}.
      */
     @Override
     public ResponseEntity<EmployeeDTO> createEmployee(@RequestBody @Valid CreateEmployeeInput employeeInput) {
-        return null;
+        log.info("Received request to create employee: {}", employeeInput.getName());
+        EmployeeDTO createdEmployee = employeeService.createEmployee(employeeInput);
+        log.debug("Employee created: {}", createdEmployee.getId());
+        return new ResponseEntity<>(createdEmployee, HttpStatus.CREATED);
     }
 
     /**

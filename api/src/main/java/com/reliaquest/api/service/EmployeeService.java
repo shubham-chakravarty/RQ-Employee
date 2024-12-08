@@ -2,6 +2,7 @@ package com.reliaquest.api.service;
 
 import com.reliaquest.api.client.ExternalApiClient;
 import com.reliaquest.api.exception.EmployeeNotFoundException;
+import com.reliaquest.api.model.CreateEmployeeInput;
 import com.reliaquest.api.model.EmployeeDTO;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -115,6 +116,23 @@ public class EmployeeService {
 
         log.debug("Top earners found: {}", topEarners);
         return topEarners;
+    }
+
+    /**
+     * Calls the external API to create a new employee with the given input details.
+     * <p>
+     * If the external API call is successful, returns the newly created employee’s data.
+     * If the external API returns an error, propagates that error. Handling can be done
+     * via a global exception handler.
+     *
+     * @param input the employee creation request data
+     * @return the created {@link EmployeeDTO} from the external API
+     */
+    public EmployeeDTO createEmployee(CreateEmployeeInput input) {
+        log.info("Creating employee via external API: {}", input.getName());
+        EmployeeDTO created = externalApiClient.createEmployee(input);
+        log.debug("Created employee: {}", created);
+        return created;
     }
 
 }

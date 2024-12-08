@@ -1,6 +1,7 @@
 package com.reliaquest.api.client;
 
 import com.reliaquest.api.constants.ApiConstants;
+import com.reliaquest.api.model.CreateEmployeeInput;
 import com.reliaquest.api.model.EmployeeDTO;
 import com.reliaquest.api.model.ResponseWrapperDTO;
 import com.reliaquest.api.model.SingleEmployeeResponseDTO;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
@@ -75,5 +77,30 @@ public class ExternalApiClient {
             log.warn("Employee not found on external API for id: {}", id);
             return null;
         }
+    }
+
+    /**
+     * Creates a new employee via the external mock API.
+     * <p>
+     * Sends a POST request with the given input data. On success, returns the
+     * {@link EmployeeDTO} of the newly created employee. If the external API responds
+     * with an error (e.g., validation failure or other issue), a
+     * {@link HttpClientErrorException} or {@link HttpServerErrorException} will be thrown.
+     *
+     * @param input the data needed to create a new employee
+     * @return the {@link EmployeeDTO} returned by the external API after creation
+     */
+    public EmployeeDTO createEmployee(CreateEmployeeInput input) {
+        String url = BASE_URL + ApiConstants.EMPLOYEE_BASE_API;
+        log.info("POST {}", url);
+
+        SingleEmployeeResponseDTO response = restTemplate.postForObject(url, input, SingleEmployeeResponseDTO.class);
+
+        if (response == null || response.getData() == null) {
+            log.warn("No data returned from external API after employee creation.");
+            throw new IllegalStateException("Employee creation failed: no response data.");
+        }
+
+        return response.getData();
     }
 }
