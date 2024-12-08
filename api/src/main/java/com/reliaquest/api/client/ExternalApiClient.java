@@ -1,13 +1,14 @@
 package com.reliaquest.api.client;
 
 import com.reliaquest.api.constants.ApiConstants;
-import com.reliaquest.api.model.CreateEmployeeInput;
-import com.reliaquest.api.model.EmployeeDTO;
-import com.reliaquest.api.model.ResponseWrapperDTO;
-import com.reliaquest.api.model.SingleEmployeeResponseDTO;
+import com.reliaquest.api.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -102,5 +103,20 @@ public class ExternalApiClient {
         }
 
         return response.getData();
+    }
+
+    /**
+     * Deletes an employee by their name via the external API.
+     *
+     * @param name the name of the employee to delete.
+     */
+    public void deleteEmployeeByName(String name) {
+        String url = BASE_URL + ApiConstants.EMPLOYEE_BASE_API;
+        log.info("DELETE {} with name {}", url, name);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<DeleteEmployeeRequestDTO> request = new HttpEntity<>(new DeleteEmployeeRequestDTO(name), headers);
+        restTemplate.exchange(url, HttpMethod.DELETE, request, Void.class);
     }
 }

@@ -129,11 +129,15 @@ public class EmployeeController implements IEmployeeController<EmployeeDTO, Crea
     }
 
     /**
-     * @param id
-     * @return
+     * Deletes an employee by their ID.
+     *
+     * @param id the ID of the employee to delete.
+     * @return a ResponseEntity with a success message if the deletion is successful,
+     *         or a not found status if the employee does not exist.
      */
     @Override
-    public ResponseEntity<String> deleteEmployeeById(String id) {
-        return null;
+    public ResponseEntity<String> deleteEmployeeById(@PathVariable String id) {
+        String message = employeeService.deleteEmployeeById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(message);
     }
 }

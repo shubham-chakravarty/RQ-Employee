@@ -7,6 +7,7 @@ import com.reliaquest.api.model.EmployeeDTO;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -134,5 +135,30 @@ public class EmployeeService {
         log.debug("Created employee: {}", created);
         return created;
     }
+
+    /**
+     * Deletes an employee by their ID by first fetching the employee and then
+     * deleting it by their name (as required by the external API).
+     *
+     * @param id the ID of the employee to delete.
+     * @return a success message if the employee is deleted successfully.
+     * @throws EmployeeNotFoundException if the employee is not found or has no valid name.
+     */
+    public String deleteEmployeeById(String id) {
+        // Fetch employee by ID
+        EmployeeDTO employee = externalApiClient.getEmployeeById(id);
+
+        if (employee == null || employee.getEmployeeName() == null) {
+            log.warn("Employee with ID {} not found or does not have a valid name for deletion.", id);
+            throw new EmployeeNotFoundException(id);
+        }
+
+        // Delete employee by name
+        externalApiClient.deleteEmployeeByName(employee.getEmployeeName());
+        String successMessage = "Employee with ID " + id + " and name " + employee.getEmployeeName() + " deleted successfully.";
+        log.info(successMessage);
+        return successMessage;
+    }
+
 
 }

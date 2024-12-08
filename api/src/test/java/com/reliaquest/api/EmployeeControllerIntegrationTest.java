@@ -11,9 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.web.client.HttpClientErrorException;
@@ -21,12 +19,13 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
-import static org.hamcrest.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -384,4 +383,50 @@ public class EmployeeControllerIntegrationTest {
                         .content(objectMapper.writeValueAsString(input)))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void deleteEmployeeById_validId_returnsSuccessMessage() throws Exception {
+        String id = "valid-id";
+        String name = "John Doe";
+
+        EmployeeDTO employeeDTO = EmployeeDTO.builder()
+                .id(id)
+                .employeeName(name)
+                .build();
+        SingleEmployeeResponseDTO singleEmployeeResponseDTO = SingleEmployeeResponseDTO.builder()
+                .data(employeeDTO)
+                .build();
+
+        // Mock fetching employee by ID
+        given(restTemplate.getForObject(eq(MOCK_SERVER_URL + PATH_SEPARATOR + id), eq(SingleEmployeeResponseDTO.class)))
+                .willReturn(singleEmployeeResponseDTO);
+
+        when(restTemplate.exchange(
+                eq(MOCK_SERVER_URL),
+                eq(HttpMethod.DELETE),
+                any(HttpEntity.class),
+                eq(Void.class)
+        )).thenReturn(ResponseEntity.noContent().build());
+
+
+        mockMvc.perform(delete(APP_URL + PATH_SEPARATOR + id)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Employee with ID "+id+" and name "+name+" deleted successfully."));
+    }
+
+    @Test
+    void deleteEmployeeById_invalidId_returnsNotFound() throws Exception {
+        String id = "invalid-id";
+
+        // Mock fetching employee by ID (returns null)
+        given(restTemplate.getForObject(eq(MOCK_SERVER_URL + PATH_SEPARATOR + id), eq(SingleEmployeeResponseDTO.class)))
+                .willReturn(null);
+
+        mockMvc.perform(delete(APP_URL + PATH_SEPARATOR + id)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("Employee not found for ID: "+id));
+    }
+
 }
